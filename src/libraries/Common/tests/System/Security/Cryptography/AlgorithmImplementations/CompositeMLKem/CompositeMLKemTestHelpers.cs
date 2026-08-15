@@ -11,7 +11,7 @@ using Xunit.Sdk;
 
 namespace System.Security.Cryptography.Tests
 {
-    internal static class CompositeMLKemTestHelpers
+    internal static partial class CompositeMLKemTestHelpers
     {
         private delegate AsnWriter WriteEncryptedPkcs8<T>(ReadOnlySpan<T> password, AsnWriter writer, PbeParameters pbeParameters);
 

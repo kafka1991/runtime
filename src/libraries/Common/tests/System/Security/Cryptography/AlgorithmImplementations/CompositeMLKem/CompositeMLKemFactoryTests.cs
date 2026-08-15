@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Formats.Asn1;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography.Asn1;
 using Microsoft.DotNet.RemoteExecutor;
 using Test.Cryptography;
@@ -41,14 +40,25 @@ namespace System.Security.Cryptography.Tests
         [MemberData(nameof(CompositeMLKemTestData.AllAlgorithmsTestData), MemberType = typeof(CompositeMLKemTestData))]
         public static void IsAlgorithmSupported_AgreesWithPlatform(CompositeMLKemAlgorithm algorithm)
         {
-            bool supported =
-                !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                MLKem.IsSupported &&
-                CompositeMLKemTestData.ExecuteComponentFunc(
-                    algorithm,
-                    rsa => true,
-                    ecdh => ecdh.IsSec,
-                    xdh => xdh.IsX25519 && X25519DiffieHellman.IsSupported);
+            bool supported;
+
+            if (PlatformDetection.IsWindows)
+            {
+                supported =
+                    algorithm == CompositeMLKemAlgorithm.MLKem768WithECDiffieHellmanP256 ||
+                    algorithm == CompositeMLKemAlgorithm.MLKem768WithX25519 ||
+                    algorithm == CompositeMLKemAlgorithm.MLKem1024WithECDiffieHellmanP384;
+            }
+            else
+            {
+                supported =
+                    MLKem.IsSupported &&
+                    CompositeMLKemTestData.ExecuteComponentFunc(
+                        algorithm,
+                        rsa => true,
+                        ecdh => ecdh.IsSec,
+                        xdh => xdh.IsX25519 && X25519DiffieHellman.IsSupported);
+            }
 
             Assert.Equal(supported, CompositeMLKem.IsAlgorithmSupported(algorithm));
         }
